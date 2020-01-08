@@ -17,7 +17,15 @@ const routes = [
     path: '/home',
     name: 'home',
     component: () =>
-            import ('@/views/home')
+      import('@/views/home'),
+    // 重定向
+    redirect: '/welcome',
+    // 子路由配置
+    children: [
+      { path: '/welcome', name: 'welcome', component: () => import('@/views/welcome') },
+      // 设置article路由
+      { path: '/article', name: 'article', component: () => import('@/views/article') }
+    ]
   }
 
 ]

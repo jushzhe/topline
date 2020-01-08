@@ -5,10 +5,14 @@
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules">
         <img src="./logo_index.png" alt />
         <el-form-item prop="mobile">
-          <el-input v-model="loginForm.mobile" placeholder="请输入手机号码"></el-input>
+          <el-input v-model="loginForm.mobile" placeholder="请输入手机号码">
+            <i slot="prefix" class="iconfont icon-shouji"></i>
+          </el-input>
         </el-form-item>
         <el-form-item prop="code">
-          <el-input v-model="loginForm.code" placeholder="请输入验证码"></el-input>
+          <el-input v-model="loginForm.code" placeholder="请输入验证码">
+            <i slot="prefix" class="iconfont icon-yanzhengma"></i>
+          </el-input>
         </el-form-item>
         <el-form-item style="text-align:left" prop="xieyi">
           <!-- 复选框，单个复选框直接设置v-model即可，接收true/false的信息，表示是否选中 -->
@@ -21,7 +25,13 @@
         </el-form-item>
         <el-form-item>
           <!-- 登录按钮 -->
-          <el-button type="primary" style="width:100%;" @click="login()">登录</el-button>
+          <el-button
+            type="primary"
+            :loading="isloading"
+            :disabled="isloading"
+            style="width:100%;"
+            @click="login()"
+          >登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -31,6 +41,9 @@
 <script>
 // 导入极验JS文件
 import './gt'
+
+// 引入图标文件
+import '@/assets/font/iconfont.css'
 // import { log } from 'util'
 export default {
   name: '',
@@ -48,6 +61,11 @@ export default {
     }
 
     return {
+      // 创建成员
+      capobj: null,
+      // 按钮是否等待 禁用
+      isloading: false,
+
       // 表单数据对象
       loginForm: {
         mobile: '13877776666', // 手机号码
@@ -61,67 +79,81 @@ export default {
           { pattern: /^1[35789]\d{9}$/, message: '格式不对' }
         ],
         // 验证码
-        code: [
-          { required: true, message: '必填' }
-        ],
+        code: [{ required: true, message: '必填' }],
         // 协议
         xieyi: [
           {
             validator: xieyiTest
           }
         ]
-
       }
     }
   },
   // 登录系统
   methods: {
     login () {
-      console.log(this)
+      // console.log(this)
       this.$refs.loginFormRef.validate(valid => {
         // 判断
         // 如果不等于valid 那么就不执行
-        if (!valid) { return false }
+        if (!valid) {
+          return false
+        }
+        // 判断极验对象
+        if (this.capobj) {
+          return this.capobj.verify()
+        }
+
+        this.isloading = true
         // 人机交互验证
         this.$http({
           url: '/mp/v1_0/captchas/' + this.loginForm.mobile,
           method: 'GET'
-
         })
+          // 成功时提示信息并跳转页面
           .then(result => {
             // 从result里边解构下述的data对象出来(对象结构赋值)
             let { data } = result.data
             // 请检测data的数据结构， 保证data.gt, data.challenge, data.success有值
-            window.initGeetest({
-            // 以下配置参数来自服务端 SDK
-              gt: data.gt,
-              challenge: data.challenge,
-              offline: !data.success,
-              new_captcha: true,
-              product: 'bind' // 设置验证窗口样式的
-            },
-            captchaObj => {
-            // 这里可以调用验证实例 captchaObj 的实例方法
-              captchaObj.onReady(() => {
-                // 验证码ready之后才能调用verify方法显示验证码(可以显示窗口了)
-                captchaObj.verify() // 显示验证码窗口
-              })
-                .onSuccess(() => {
-                // 行为校验正确的处理
-                // B. 验证账号，登录系统
-                  this.loginAct()
-                })
-                .onError(() => {
-                // 行为校验错误的处理
-                })
-            }
-            )
-              .catch(err => {
-                return this.$message.error('获取极验秘钥失败：' + err)
-              })
+            window
+              .initGeetest(
+                {
+                  // 以下配置参数来自服务端 SDK
+                  gt: data.gt,
+                  challenge: data.challenge,
+                  offline: !data.success,
+                  new_captcha: true,
+                  product: 'bind' // 设置验证窗口样式的
+                },
+                captchaObj => {
+                  // 这里可以调用验证实例 captchaObj 的实例方法
+                  captchaObj
+                    .onReady(() => {
+                      // 验证码ready之后才能调用verify方法显示验证码(可以显示窗口了)
+                      captchaObj.verify() // 显示验证码窗口
+                      // 激活按钮设置
+                      this.isloading = false
+                      this.capobj = captchaObj
+                    })
+                    .onSuccess(() => {
+                      // 行为校验正确的处理
+                      // B. 验证账号，登录系统
+                      // 调用方法
+                      this.loginAct()
+                    })
+                    .onError(() => {
+                      // 行为校验错误的处理
+                    })
+                }
+              )
+          })
+        // 错误时提示信息
+          .catch(err => {
+            return this.$message.error('获取极验秘钥失败：' + err)
           })
       })
     },
+    // 封装
     loginAct () {
       this.$http({
         // 地址
@@ -133,21 +165,23 @@ export default {
         // 成功时跳转到后台
         .then(result => {
           // 秘钥 sessionStorage
-          window.sessionStorage.setItem('userinfo', JSON.stringify(result.data.data))
+          window.sessionStorage.setItem(
+            'userinfo',
+            JSON.stringify(result.data.data)
+          )
           // window.sessionStorage.setItem('userinfo', JSON.stringify(result.data.data))
           //  进入后台系统
           this.$router.push({ name: 'home' })
         })
-      // 错误时提示
+        // 错误时提示
         .catch(err => {
-          console.log(err)
+          // console.log(err)
 
           this.$message.error('手机号码或验证码错误:' + err)
         })
     }
   }
 }
-
 </script>
 
 <style lang="less" scoped>
