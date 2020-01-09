@@ -68,7 +68,8 @@ export default {
 
       // 表单数据对象
       loginForm: {
-        mobile: '13877776666', // 手机号码
+        // mobile: '13877776666',  自己注册的手机号码
+        mobile: '13911111111', // 公共的号码
         code: '246810', // 验证码
         xieyi: true // 协议复选框
       },

@@ -11,7 +11,7 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () =>
-            import ('@/views/login')
+      import('@/views/login')
   },
   {
     path: '/home',
@@ -21,6 +21,7 @@ const routes = [
     // 重定向
     redirect: '/welcome',
     // 子路由配置
+    // 设置welcome路由
     children: [
       { path: '/welcome', name: 'welcome', component: () => import('@/views/welcome') },
       // 设置article路由

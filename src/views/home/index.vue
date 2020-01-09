@@ -10,7 +10,7 @@
         :collapse-transition="false"
         router
       >
-        <el-menu-item index="1" :style="isCollapse?'65px':'200px'">
+        <el-menu-item index="/welcome" :style="isCollapse?'65px':'200px'">
           <i class="el-icon-location"></i>
           <span slot="title">首页</span>
         </el-menu-item>
