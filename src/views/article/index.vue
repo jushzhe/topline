@@ -19,14 +19,7 @@
           </el-form-item>
           <el-form-item label="频道列表：">
             <el-form-item label="频道列表：">
-              <el-select v-model="searchForm.channel_id" placeholder="请选择" clearable>
-                <el-option
-                  v-for="item in channeLlist"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                ></el-option>
-              </el-select>
+              <channel @slt="selectHandler"></channel>
             </el-form-item>
           </el-form-item>
           <el-form-item label="时间选择：">
@@ -78,9 +71,28 @@
           <el-button type="danger" icon="el-icon-delete" circle></el-button>
         </el-row>-->
         <el-table-column label="操作">
-          <el-button type="primary" icon="el-icon-edit" circle size="small"></el-button>
-          <el-button type="warning" icon="el-icon-star-off" circle size="small"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle size="small"></el-button>
+          <template slot-scope="stData">
+            <el-button
+              type="primary"
+              icon="el-icon-edit"
+              circle
+              size="small"
+              @click="$router.push(`/articleedit/${stData.row.id}`)"
+            ></el-button>
+            <el-button
+              type="warning"
+              icon="el-icon-star-off"
+              circle
+              size="small"
+            ></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              size="small"
+              @click="del(stData.row.id)"
+            ></el-button>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination
@@ -98,10 +110,12 @@
 </template>
 
 <script>
+import Channel from '@/components/channel.vue'
+
 export default {
   // 监听器 watch
   watch: {
-  // 对searchForm进行深度监听 固定语法
+    // 对searchForm进行深度监听 固定语法
     searchForm: {
       handler: function () {
         this.GetArticleList()
@@ -146,20 +160,52 @@ export default {
         status: ''
       },
       //   日期对象
-      timetotime: '',
+      timetotime: ''
       //   创建对象
-      channeLlist: []
     }
+  },
+  components: {
+    // 注册频道独立组件
+    Channel
   },
   //   获得频道
   created () {
     //   展示数据方法调用
-    this.GetchanneLlist()
+
     // 文章列表数据方法调用
-    this.GetArticleList()
+    this.getArticleList()
   },
   //   方法
   methods: {
+    selectHandler (val) {
+      this.searchForm.channel_id = val
+    },
+    // 删除文章
+    del (id) {
+      // 确认事情
+      this.$confirm('确认要删除该文章么?', '删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // axios请求服务器端实现删除
+        let pro = this.$http({
+          url: '/mp/v1_0/articles/' + id,
+          method: 'delete'
+        })
+        pro
+          .then(result => {
+            // 删除成功
+            // console.log(result)  // 返回空的data数据
+            // 直接页面刷新即可
+            this.getArticleList()
+          })
+          .catch(err => {
+            return this.$message.error('删除文章失败：' + err)
+          })
+      }).catch(() => {
+      })
+    },
     // 回调处理 参数代表变化后
     handleSizeChange (val) {
       // 更新页数
@@ -176,7 +222,7 @@ export default {
     },
     // 通过axios请求服务器获取文章列表
     // 创建方法
-    GetArticleList () {
+    getArticleList () {
       // 过滤
       // 声明一个空变量接收
       let searchData = {}
@@ -207,28 +253,28 @@ export default {
         .catch(err => {
           return this.$message.error('获取频道失败' + err)
         })
-    },
-
-    GetchanneLlist () {
-      this.$http({
-        //   地址
-        url: '/mp/v1_0/channels',
-        // 请求类型
-        method: 'get'
-        // 没有参数
-      })
-        //   成功时
-        .then(result => {
-          //   console.log(result)
-          //   接收数据
-          this.channeLlist = result.data.data.channels
-        })
-        // 失败时
-        .catch(err => {
-          //   console.log(err)
-          return this.$message.error('获取频道失败' + err)
-        })
     }
+
+    // GetchanneLlist () {
+    //   this.$http({
+    //     //   地址
+    //     url: '/mp/v1_0/channels',
+    //     // 请求类型
+    //     method: 'get'
+    //     // 没有参数
+    //   })
+    //     //   成功时
+    //     .then(result => {
+    //       //   console.log(result)
+    //       //   接收数据
+    //       this.channeLlist = result.data.data.channels
+    //     })
+    //     // 失败时
+    //     .catch(err => {
+    //       //   console.log(err)
+    //       return this.$message.error('获取频道失败' + err)
+    //     })
+    // }
   }
 }
 </script>

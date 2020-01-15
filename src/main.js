@@ -8,10 +8,14 @@ import '@/assets/css/global.css'
 import '@/utils/ax.js'
 
 // 引入饿了么组件
-import Element from 'element-ui'
+// import Element from 'element-ui'
 
 // 注册饿了么
-Vue.use(Element)
+// Vue.use(Element)
+
+// 引入饿了么组件
+import '@/utils/Element.js'
+
 Vue.config.productionTip = false
 
 new Vue({

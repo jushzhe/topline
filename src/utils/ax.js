@@ -8,6 +8,15 @@ import router from '@/router'
 
 import Vue from 'vue'
 
+// 引入json-bigint
+import JSONbig from 'json-bigint'
+axios.defaults.transformResponse = [function (data) {
+  if (data) {
+    return JSONbig.parse(data)
+  }
+  return data
+}]
+
 // 配置响应拦截器
 axios.interceptors.response.use(function (response) {
   // 正常响应处理

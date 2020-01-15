@@ -19,16 +19,16 @@
             <i class="el-icon-menu"></i>
             <span>内容管理</span>
           </template>
-          <el-menu-item index="2-1">发布文章</el-menu-item>
+          <el-menu-item index="articleadd">发布文章</el-menu-item>
           <el-menu-item index="/article" >文章列表</el-menu-item>
           <el-menu-item index="2-3">评论列表</el-menu-item>
-          <el-menu-item index="2-4">素材管理</el-menu-item>
+          <el-menu-item index="/material">素材管理</el-menu-item>
         </el-submenu>
-        <el-menu-item index="3" :style="isCollapse?'65px':'200px'">
+        <el-menu-item index="/fans" :style="isCollapse?'65px':'200px'">
           <i class="el-icon-document"></i>
           <span slot="title">粉丝管理</span>
         </el-menu-item>
-        <el-menu-item index="4" :style="isCollapse?'65px':'200px'">
+        <el-menu-item index="/account" :style="isCollapse?'65px':'200px'">
           <i class="el-icon-setting"></i>
           <span slot="title">账户管理</span>
         </el-menu-item>
@@ -50,7 +50,7 @@
           <span style="margin:0 10px">消息</span>
           <el-dropdown>
             <span class="el-dropdown-link">
-              <img src="./pikaqiu.jpg" alt width="40" height="40" />
+              <img :src="photo" alt width="40" height="40" />
               {{name}}
               <i class="el-icon-arrow-down el-icon--right"></i>
             </span>
@@ -71,10 +71,38 @@
 </template>
 
 <script>
+import bus from '@/utils/bus.js'
+
 export default {
+  // 生命周期 created
+  created () {
+    // 名称更新
+    bus.$on('upAccountName', nm => {
+      // 更新name信息
+      let userinfo = JSON.parse(window.sessionStorage.getItem('userinfo'))
+      userinfo.name = nm
+      window.sessionStorage.setItem('userinfo', JSON.stringify(userinfo))
+      // 更新数据
+      this.tmpname = nm
+    })
+    // 头像更新
+    bus.$on('upAccountPhoto', ph => {
+      //  更新photo信息
+      let userinfo = JSON.parse(window.sessionStorage.getItem('userinfo'))
+      // let userinfo = JSON.parse(window.sessionStorage.getItem('userinfo'))
+      userinfo.photo = ph
+      window.sessionStorage.setItem('userinfo', JSON.stringify(userinfo))
+      // 更新数据
+      this.tmpphoto = ph
+    })
+  },
   // 数据
   data () {
     return {
+      // 临时账户名称
+      tmpname: '',
+      // 临时账户头像
+      tmpphoto: '',
       isCollapse: false
     }
   },
@@ -104,11 +132,11 @@ export default {
   computed: {
     // 获取账户名称
     name: function () {
-      return JSON.parse(window.sessionStorage.getItem('userinfo')).name
+      return this.tmpname || JSON.parse(window.sessionStorage.getItem('userinfo')).name
     },
     // 获取账户头像
     photo: function () {
-      return JSON.parse(window.sessionStorage.getItem('userinfo')).photo
+      return this.tmpphoto || JSON.parse(window.sessionStorage.getItem('userinfo')).photo
     }
   }
 }

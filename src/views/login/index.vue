@@ -31,6 +31,7 @@
             :disabled="isloading"
             style="width:100%;"
             @click="login()"
+
           >登录</el-button>
         </el-form-item>
       </el-form>
@@ -68,8 +69,8 @@ export default {
 
       // 表单数据对象
       loginForm: {
-        // mobile: '13877776666',  自己注册的手机号码
-        mobile: '13911111111', // 公共的号码
+        mobile: '13877776666', // 自己注册的手机号码
+        // mobile: '13911111111', // 公共的号码
         code: '246810', // 验证码
         xieyi: true // 协议复选框
       },
@@ -192,7 +193,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url("./login_bg.jpg");
+  background-image: url("./012.jpg");
   background-size: cover;
   .login-box {
     width: 410px;
